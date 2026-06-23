@@ -23,10 +23,16 @@ namespace GildedRoseKata;
  * 
  * 3. Now that I have all tests Cases that cover the needed Business Rules,
  * 
- *    - First before changing the messi code I will try to add conjure items logic and make the test pass.
+ *    - First before changing the messy code I will try to add conjure items logic and make the test pass.
  *    
- *    - Then i will make small changes to the if statments, like try to separate the 
- *    if statements to own Items Categories
+ *    - Then I will make small changes to the if statments, like try to separate the 
+ *    if statements to own Items Categories this will allow me to make each logic dependent and 
+ *    a bit more readable. 
+ *    
+ * 4. Now its time to maybe create an ItemObject with category methods or Objects that inherit form Item 
+      each Item category with its own rules
+ * in GRASP Principle, this would be Information Expert, add the rules to the Object
+ * of the same context or Dependency Injection hmmmmmmmmmmmmmm
  * 
  * 
  * 
@@ -34,12 +40,14 @@ namespace GildedRoseKata;
 
 public static class ItemCategory
 {
-    public static readonly string Normal = "";
+    public static readonly string Normal;
     public static readonly string Sulfuras = "Sulfuras, Hand of Ragnaros";
     public static readonly string AgedBrie = "Aged Brie";
     public static readonly string BackstagePasses = "Backstage passes to a TAFKAL80ETC concert";
     public static readonly string Conjured = "Conjured Mana Cake";
 }
+
+
 
 public class GildedRose
 {
@@ -74,12 +82,11 @@ public class GildedRose
             int MaxQualityValue = 50;
 
 
+
+
             // Category: Conjured Items
             if (itemName == ItemCategory.Conjured)
             {
-                // Check Rules
-                if (itemQuality > MaxQualityValue) Items[i].Quality = MaxQualityValue;
-
                 //SellIn Rules
                 Items[i].SellIn = itemSellIn - 1;
 
@@ -88,80 +95,81 @@ public class GildedRose
                 if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
                 else Items[i].Quality = itemQuality - 2;
 
-                break;
+                if (Items[i].Quality >= MaxQualityValue) Items[i].Quality = MaxQualityValue;
+                
+                continue;
             }
 
-            if (Items[i].Name != "Aged Brie" && Items[i].Name != "Backstage passes to a TAFKAL80ETC concert")
+            // Category: Aged Brie
+
+            if (itemName == ItemCategory.AgedBrie)
             {
-                if (Items[i].Quality > 0)
-                {
-                    if (Items[i].Name != "Sulfuras, Hand of Ragnaros")
-                    {
-                        Items[i].Quality = Items[i].Quality - 1;
-                    }
-                }
+                //SellIn Rules
+                Items[i].SellIn = itemSellIn - 1;
+
+                // Quality Rules
+
+                if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
+                
+                if(itemSellIn <= 0) Items[i].Quality = itemQuality + 2;
+                else Items[i].Quality = itemQuality + 1;
+
+                if (Items[i].Quality >= MaxQualityValue) Items[i].Quality = MaxQualityValue;
+
+                continue;
             }
-            else
+
+            // Category: Sulfuras
+
+            if (itemName == ItemCategory.Sulfuras)
             {
-                if (Items[i].Quality < 50)
-                {
-                    Items[i].Quality = Items[i].Quality + 1;
-
-                    if (Items[i].Name == "Backstage passes to a TAFKAL80ETC concert")
-                    {
-                        if (Items[i].SellIn < 11)
-                        {
-                            if (Items[i].Quality < 50)
-                            {
-                                Items[i].Quality = Items[i].Quality + 1;
-                            }
-                        }
-
-                        if (Items[i].SellIn < 6)
-                        {
-                            if (Items[i].Quality < 50)
-                            {
-                                Items[i].Quality = Items[i].Quality + 1;
-                            }
-                        }
-                    }
-                }
+                // Quality Rules
+                Items[i].Quality = 80;
+                
+                continue;
             }
 
+            // Category: Backstage passes
 
-
-            if (Items[i].Name != "Sulfuras, Hand of Ragnaros")
+            if (itemName == ItemCategory.BackstagePasses)
             {
-                Items[i].SellIn = Items[i].SellIn - 1;
+
+                //SellIn Rules
+                Items[i].SellIn = itemSellIn - 1;
+
+                // Quality Rules
+
+                if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
+
+                if (itemSellIn <= MinSellInValue) Items[i].Quality = MinQualityValue;
+                else if (itemQuality < MaxQualityValue)
+                {
+                    if (itemSellIn <= 5) Items[i].Quality = itemQuality + 3;
+                    else if (itemSellIn <= 10) Items[i].Quality = itemQuality + 2;
+                    else Items[i].Quality = itemQuality + 1;
+                }
+               
+                if (Items[i].Quality > MaxQualityValue) Items[i].Quality = MaxQualityValue;
+
+                continue;
             }
 
-            if (Items[i].SellIn < 0)
-            {
-                if (Items[i].Name != "Aged Brie")
+            // Category: Normal
+
+                //SellIn Rules
+                Items[i].SellIn = itemSellIn - 1;
+
+                // Quality Rules
+
+                if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
+
+                else if (itemQuality < MaxQualityValue)
                 {
-                    if (Items[i].Name != "Backstage passes to a TAFKAL80ETC concert")
-                    {
-                        if (Items[i].Quality > 0)
-                        {
-                            if (Items[i].Name != "Sulfuras, Hand of Ragnaros")
-                            {
-                                Items[i].Quality = Items[i].Quality - 1;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Items[i].Quality = Items[i].Quality - Items[i].Quality;
-                    }
+                    if (itemSellIn <= MinSellInValue) Items[i].Quality = itemQuality - 2;
+                    else Items[i].Quality = itemQuality - 1;
                 }
-                else
-                {
-                    if (Items[i].Quality < 50)
-                    {
-                        Items[i].Quality = Items[i].Quality + 1;
-                    }
-                }
-            }
+
+                if (Items[i].Quality >= MaxQualityValue) Items[i].Quality = MaxQualityValue;
         }
     }
 }

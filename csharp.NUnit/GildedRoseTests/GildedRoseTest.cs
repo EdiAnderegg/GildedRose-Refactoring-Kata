@@ -9,7 +9,7 @@ public class GildedRoseTest
 
 
     // TestCases of Category: Normal
-    [TestCase("NormalItem", 10 ,10, 9)]
+    [TestCase("+5 Dexterity Vest", 10 ,10, 9)]
 
     // TestCases of Category: Aged Brie
     [TestCase("Aged Brie", 10, 8, 9)]
@@ -42,10 +42,10 @@ public class GildedRoseTest
     }
 
     // TestCases of Category: Normal
-    [TestCase("NormalItem", 10, 8, 7)]
-    [TestCase("NormalItem", 0, 8, 6)]
-    [TestCase("NormalItem", 10, 0, 0)]
-    [TestCase("NormalItem", 10, 51, 50)]
+    [TestCase("+5 Dexterity Vest", 10, 8, 7)]
+    [TestCase("+5 Dexterity Vest", 0, 8, 6)]
+    [TestCase("+5 Dexterity Vest", 10, 0, -1)]
+    [TestCase("+5 Dexterity Vest", 10, 51, 50)]
 
     // TestCases of Category: Aged Brie
     [TestCase("Aged Brie", 10, 8, 9)]
