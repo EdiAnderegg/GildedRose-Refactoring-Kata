@@ -36,18 +36,12 @@ namespace GildedRoseKata;
  * 
  * Ok Dependency Injection would be here a good Option. I will go for dependency Injection
  * 
+ * 5. I can improve even more, right now what bothers me the most is how my local code depends alot of 
+ * Items Model class wich is not good.
+ * Maybe using Repository Pattern helps
  * 
  * 
  */
-
-
-
-// Category Classes
-public static class ItemCategory
-{
-    public static readonly string Sulfuras = "Sulfuras, Hand of Ragnaros";
-    public static readonly string BackstagePasses = "Backstage passes to a TAFKAL80ETC concert";
-}
 
 public interface IItemUpdateRule
 {
@@ -80,6 +74,11 @@ public abstract class BaseItemRules
         if (item.Quality >= MaxQualityValue) item.Quality = MaxQualityValue;
     }
 
+    protected void QualityIsCero(Item item)
+    {
+        item.Quality = MinQualityValue;
+    }
+
 
     protected void QualityRiseByOne(Item item)
     {
@@ -89,6 +88,11 @@ public abstract class BaseItemRules
     protected void QualityRiseByTwo(Item item)
     {
         item.Quality = item.Quality + 2;
+    }
+
+    protected void QualityRiseByThree(Item item)
+    {
+        item.Quality = item.Quality + 3;
     }
 
     protected void QualityDropsByOne(Item item)
@@ -112,9 +116,9 @@ public class NormalUpdateRule : BaseItemRules, IItemUpdateRule
     {
         // SellInRules
         base.SellInDropsByOneDay(item);
-        
+
         //  Rules
-        if (base.QualityIsNegativeOrCero(item.Quality)) item.Quality = base.MinQualityValue;
+        if (base.QualityIsNegativeOrCero(item.Quality)) QualityIsCero(item);
         else
         {
             if (item.SellIn < base.SellInDay) base.QualityDropsByTwo(item);
@@ -124,7 +128,6 @@ public class NormalUpdateRule : BaseItemRules, IItemUpdateRule
         base.QualityCanNotBeHigherThanFifty(item);
     }
 }
-
 public class ConjuredUpdateRule : BaseItemRules, IItemUpdateRule
 {
 
@@ -139,14 +142,13 @@ public class ConjuredUpdateRule : BaseItemRules, IItemUpdateRule
         base.SellInDropsByOneDay(item);
 
         // Rules
-        if (base.QualityIsNegativeOrCero(item.Quality)) item.Quality = base.MinQualityValue;
+        if (base.QualityIsNegativeOrCero(item.Quality)) QualityIsCero(item);
         else base.QualityDropsByTwo(item);
 
         // Quality Rule
         base.QualityCanNotBeHigherThanFifty(item);
     }
 }
-
 public class AgedBrieUpdateRule : BaseItemRules, IItemUpdateRule
 {
 
@@ -161,7 +163,7 @@ public class AgedBrieUpdateRule : BaseItemRules, IItemUpdateRule
         base.SellInDropsByOneDay(item);
 
         // Rules
-        if (base.QualityIsNegativeOrCero(item.Quality)) item.Quality = base.MinQualityValue;
+        if (base.QualityIsNegativeOrCero(item.Quality)) QualityIsCero(item);
 
         if (item.SellIn < base.SellInDay) QualityRiseByTwo(item);
         else QualityRiseByOne(item);
@@ -170,6 +172,49 @@ public class AgedBrieUpdateRule : BaseItemRules, IItemUpdateRule
         base.QualityCanNotBeHigherThanFifty(item);
     }
 }
+public class BackStagePassesUpdateRule : BaseItemRules, IItemUpdateRule
+{
+
+    public bool AppliesTo(string itemName)
+    {
+        return itemName == "Backstage passes to a TAFKAL80ETC concert";
+    }
+
+    public void Update(Item item)
+    {
+        // SellInRules
+        base.SellInDropsByOneDay(item);
+
+        // Rules
+        if (base.QualityIsNegativeOrCero(item.Quality)) QualityIsCero(item);
+        else
+        {
+            if (item.SellIn < base.SellInDay) QualityIsCero(item);
+            else if (item.SellIn < 5) QualityRiseByThree(item);
+            else if (item.SellIn < 10) QualityRiseByTwo(item);
+            else QualityRiseByOne(item);
+        }
+
+        // Quality Rule
+        base.QualityCanNotBeHigherThanFifty(item);
+    }
+}
+public class SulfurasUpdateRule : BaseItemRules, IItemUpdateRule
+{
+
+    public bool AppliesTo(string itemName)
+    {
+        return itemName == "Sulfuras, Hand of Ragnaros";
+    }
+
+    public void Update(Item item)
+    {
+        // Rules
+        item.Quality = 80;
+    }
+}
+
+
 
 public class GildedRose
 {
@@ -181,67 +226,11 @@ public class GildedRose
         this.Items = Items;
         this.Rules = Rules;
     }
-
-
-    public Item GetItemByIndex(int index)
-    {
-        return Items[index];
-    }
-
-    
-
     public void UpdateQuality()
     {
 
         for (var i = 0; i < Items.Count; i++)
         {
-
-
-            // Item Properties
-            string itemName = Items[i].Name;
-            int itemSellIn = Items[i].SellIn;
-            int itemQuality = Items[i].Quality;
-
-            // Item Rules
-            int MinSellInValue = 0;
-            int MinQualityValue = 0;
-            int MaxQualityValue = 50;
-
-            // Category: Sulfuras
-
-            if (itemName == ItemCategory.Sulfuras)
-            {
-                // Quality Rules
-                Items[i].Quality = 80;
-                
-                continue;
-            }
-
-            // Category: Backstage passes
-
-            if (itemName == ItemCategory.BackstagePasses)
-            {
-
-                //SellIn Rules
-                Items[i].SellIn = itemSellIn - 1;
-
-                // Quality Rules
-
-                if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
-
-                if (itemSellIn <= MinSellInValue) Items[i].Quality = MinQualityValue;
-                else if (itemQuality < MaxQualityValue)
-                {
-                    if (itemSellIn <= 5) Items[i].Quality = itemQuality + 3;
-                    else if (itemSellIn <= 10) Items[i].Quality = itemQuality + 2;
-                    else Items[i].Quality = itemQuality + 1;
-                }
-
-                if (Items[i].Quality > MaxQualityValue) Items[i].Quality = MaxQualityValue;
-
-                continue;
-            }
-
             foreach (IItemUpdateRule itemRule in Rules)
             {
                 if (itemRule.AppliesTo(Items[i].Name))
@@ -250,7 +239,6 @@ public class GildedRose
                     break;
                 }
             }
-
         }
     }
 }

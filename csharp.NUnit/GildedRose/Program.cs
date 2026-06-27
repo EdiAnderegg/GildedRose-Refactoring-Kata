@@ -42,6 +42,8 @@ public class Program
 
         IList<IItemUpdateRule> updateRules = new List<IItemUpdateRule>
         {
+            new SulfurasUpdateRule(),
+            new BackStagePassesUpdateRule(),
             new AgedBrieUpdateRule(),
             new ConjuredUpdateRule(),
             new NormalUpdateRule()
