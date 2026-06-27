@@ -34,6 +34,7 @@ public class GildedRoseTest
         var items = new List<Item> { item };
         var updateRules = new List<IItemUpdateRule>
         {
+            new AgedBrieUpdateRule(),
             new ConjuredUpdateRule(),
             new NormalUpdateRule()
         };
@@ -86,6 +87,7 @@ public class GildedRoseTest
         var items = new List<Item> { item };
         var updateRules = new List<IItemUpdateRule>
         {
+            new AgedBrieUpdateRule(),
             new ConjuredUpdateRule(),
             new NormalUpdateRule()
         };

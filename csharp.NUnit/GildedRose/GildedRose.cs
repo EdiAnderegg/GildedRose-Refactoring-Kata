@@ -46,7 +46,6 @@ namespace GildedRoseKata;
 public static class ItemCategory
 {
     public static readonly string Sulfuras = "Sulfuras, Hand of Ragnaros";
-    public static readonly string AgedBrie = "Aged Brie";
     public static readonly string BackstagePasses = "Backstage passes to a TAFKAL80ETC concert";
 }
 
@@ -79,6 +78,17 @@ public abstract class BaseItemRules
     protected void QualityCanNotBeHigherThanFifty(Item item)
     {
         if (item.Quality >= MaxQualityValue) item.Quality = MaxQualityValue;
+    }
+
+
+    protected void QualityRiseByOne(Item item)
+    {
+        item.Quality = item.Quality + 1;
+    }
+
+    protected void QualityRiseByTwo(Item item)
+    {
+        item.Quality = item.Quality + 2;
     }
 
     protected void QualityDropsByOne(Item item)
@@ -137,6 +147,29 @@ public class ConjuredUpdateRule : BaseItemRules, IItemUpdateRule
     }
 }
 
+public class AgedBrieUpdateRule : BaseItemRules, IItemUpdateRule
+{
+
+    public bool AppliesTo(string itemName)
+    {
+        return itemName == "Aged Brie";
+    }
+
+    public void Update(Item item)
+    {
+        // SellInRules
+        base.SellInDropsByOneDay(item);
+
+        // Rules
+        if (base.QualityIsNegativeOrCero(item.Quality)) item.Quality = base.MinQualityValue;
+
+        if (item.SellIn < base.SellInDay) QualityRiseByTwo(item);
+        else QualityRiseByOne(item);
+
+        // Quality Rule
+        base.QualityCanNotBeHigherThanFifty(item);
+    }
+}
 
 public class GildedRose
 {
@@ -173,25 +206,6 @@ public class GildedRose
             int MinSellInValue = 0;
             int MinQualityValue = 0;
             int MaxQualityValue = 50;
-
-            // Category: Aged Brie
-
-            if (itemName == ItemCategory.AgedBrie)
-            {
-                //SellIn Rules
-                Items[i].SellIn = itemSellIn - 1;
-
-                // Quality Rules
-
-                if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
-                
-                if(itemSellIn <= 0) Items[i].Quality = itemQuality + 2;
-                else Items[i].Quality = itemQuality + 1;
-
-                if (Items[i].Quality >= MaxQualityValue) Items[i].Quality = MaxQualityValue;
-
-                continue;
-            }
 
             // Category: Sulfuras
 
