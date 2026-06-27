@@ -34,28 +34,71 @@ namespace GildedRoseKata;
  * in GRASP Principle, this would be Information Expert, add the rules to the Object
  * of the same context or Dependency Injection hmmmmmmmmmmmmmm
  * 
+ * Ok Dependency Injection would be here a good Option. I will go for dependency Injection
+ * 
  * 
  * 
  */
 
+
+
+// Category Classes
 public static class ItemCategory
 {
-    public static readonly string Normal;
     public static readonly string Sulfuras = "Sulfuras, Hand of Ragnaros";
     public static readonly string AgedBrie = "Aged Brie";
     public static readonly string BackstagePasses = "Backstage passes to a TAFKAL80ETC concert";
     public static readonly string Conjured = "Conjured Mana Cake";
+
 }
 
+public interface IItemUpdateRule
+{
+    public bool AppliesTo(string itemName);
+    public void Update(Item item);
+}
+
+public class NormalUpdateRule : IItemUpdateRule
+{
+    private int _MinQualityValue = 0;
+    private int _MaxQualityValue = 50;
+    private int _SellInDay = 0;
+
+    public bool AppliesTo(string itemName)
+    {
+        return true;
+    }
+
+    public void Update(Item item)
+    {
+
+        //SellIn Rules
+        item.SellIn = item.SellIn - 1;
+
+        // Quality Rules
+        if (item.Quality <= _MinQualityValue) item.Quality = _MinQualityValue;
+
+        else if (item.Quality < _MaxQualityValue)
+        {
+            if (item.SellIn < _SellInDay) item.Quality = item.Quality - 2;
+            else item.Quality = item.Quality - 1;
+        }
+
+        if (item.Quality >= _MaxQualityValue) item.Quality = _MaxQualityValue;
+
+    }
+}
 
 
 public class GildedRose
 {
     IList<Item> Items;
+    IList<IItemUpdateRule> Rules;
 
-    public GildedRose(IList<Item> Items)
+    public GildedRose(IList<Item> Items, IList<IItemUpdateRule> Rules)
     {
         this.Items = Items;
+        this.Rules = Rules;
     }
 
 
@@ -63,6 +106,8 @@ public class GildedRose
     {
         return Items[index];
     }
+
+    
 
     public void UpdateQuality()
     {
@@ -148,28 +193,17 @@ public class GildedRose
                     else if (itemSellIn <= 10) Items[i].Quality = itemQuality + 2;
                     else Items[i].Quality = itemQuality + 1;
                 }
-               
+
                 if (Items[i].Quality > MaxQualityValue) Items[i].Quality = MaxQualityValue;
 
                 continue;
             }
 
-            // Category: Normal
+            foreach (IItemUpdateRule itemRule in Rules)
+            {
+                if (itemRule.AppliesTo(Items[i].Name)) itemRule.Update(Items[i]);
+            }
 
-                //SellIn Rules
-                Items[i].SellIn = itemSellIn - 1;
-
-                // Quality Rules
-
-                if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
-
-                else if (itemQuality < MaxQualityValue)
-                {
-                    if (itemSellIn <= MinSellInValue) Items[i].Quality = itemQuality - 2;
-                    else Items[i].Quality = itemQuality - 1;
-                }
-
-                if (Items[i].Quality >= MaxQualityValue) Items[i].Quality = MaxQualityValue;
         }
     }
 }

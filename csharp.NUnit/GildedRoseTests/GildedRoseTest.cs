@@ -32,7 +32,12 @@ public class GildedRoseTest
         };
 
         var items = new List<Item> { item };
-        var app = new GildedRose(items);
+        var updateRules = new List<IItemUpdateRule>
+        {
+            new NormalUpdateRule()
+        };
+
+        var app = new GildedRose(items, updateRules);
 
         // Act
         app.UpdateQuality();
@@ -44,7 +49,7 @@ public class GildedRoseTest
     // TestCases of Category: Normal
     [TestCase("+5 Dexterity Vest", 10, 8, 7)]
     [TestCase("+5 Dexterity Vest", 0, 8, 6)]
-    [TestCase("+5 Dexterity Vest", 10, 0, -1)]
+    [TestCase("+5 Dexterity Vest", 10, 0, 0)]
     [TestCase("+5 Dexterity Vest", 10, 51, 50)]
 
     // TestCases of Category: Aged Brie
@@ -78,7 +83,12 @@ public class GildedRoseTest
         };
 
         var items = new List<Item> { item };
-        var app = new GildedRose(items);
+        var updateRules = new List<IItemUpdateRule>
+        {
+            new NormalUpdateRule()
+        };
+
+        var app = new GildedRose(items, updateRules);
 
         // Act
         app.UpdateQuality();
