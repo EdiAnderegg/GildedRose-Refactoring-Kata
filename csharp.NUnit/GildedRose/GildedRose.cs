@@ -48,8 +48,6 @@ public static class ItemCategory
     public static readonly string Sulfuras = "Sulfuras, Hand of Ragnaros";
     public static readonly string AgedBrie = "Aged Brie";
     public static readonly string BackstagePasses = "Backstage passes to a TAFKAL80ETC concert";
-    public static readonly string Conjured = "Conjured Mana Cake";
-
 }
 
 public interface IItemUpdateRule
@@ -58,12 +56,43 @@ public interface IItemUpdateRule
     public void Update(Item item);
 }
 
-public class NormalUpdateRule : IItemUpdateRule
-{
-    private int _MinQualityValue = 0;
-    private int _MaxQualityValue = 50;
-    private int _SellInDay = 0;
 
+public abstract class BaseItemRules
+{
+    protected int MinQualityValue { get; } = 0;
+    protected int MaxQualityValue { get; } = 50;
+    protected int SellInDay { get;  } = 0;
+
+
+    // SellinRules
+    protected void SellInDropsByOneDay(Item item)
+    {
+        item.SellIn = item.SellIn - 1;
+    }
+
+    // QualityRules
+    protected bool QualityIsNegativeOrCero(int itemQuality)
+    {
+       return itemQuality <= MinQualityValue;
+    }
+
+    protected void QualityCanNotBeHigherThanFifty(Item item)
+    {
+        if (item.Quality >= MaxQualityValue) item.Quality = MaxQualityValue;
+    }
+
+    protected void QualityDropsByOne(Item item)
+    {
+        item.Quality = item.Quality - 1;
+    }
+    protected void QualityDropsByTwo(Item item)
+    {
+        item.Quality = item.Quality - 2;
+    }
+
+}
+public class NormalUpdateRule : BaseItemRules, IItemUpdateRule
+{
     public bool AppliesTo(string itemName)
     {
         return true;
@@ -71,21 +100,40 @@ public class NormalUpdateRule : IItemUpdateRule
 
     public void Update(Item item)
     {
-
-        //SellIn Rules
-        item.SellIn = item.SellIn - 1;
-
-        // Quality Rules
-        if (item.Quality <= _MinQualityValue) item.Quality = _MinQualityValue;
-
-        else if (item.Quality < _MaxQualityValue)
+        // SellInRules
+        base.SellInDropsByOneDay(item);
+        
+        //  Rules
+        if (base.QualityIsNegativeOrCero(item.Quality)) item.Quality = base.MinQualityValue;
+        else
         {
-            if (item.SellIn < _SellInDay) item.Quality = item.Quality - 2;
-            else item.Quality = item.Quality - 1;
+            if (item.SellIn < base.SellInDay) base.QualityDropsByTwo(item);
+            else base.QualityDropsByOne(item);
         }
+        // Quality Rule
+        base.QualityCanNotBeHigherThanFifty(item);
+    }
+}
 
-        if (item.Quality >= _MaxQualityValue) item.Quality = _MaxQualityValue;
+public class ConjuredUpdateRule : BaseItemRules, IItemUpdateRule
+{
 
+    public bool AppliesTo(string itemName)
+    {
+        return itemName == "Conjured Mana Cake";
+    }
+
+    public void Update(Item item)
+    {
+        // SellInRules
+        base.SellInDropsByOneDay(item);
+
+        // Rules
+        if (base.QualityIsNegativeOrCero(item.Quality)) item.Quality = base.MinQualityValue;
+        else base.QualityDropsByTwo(item);
+
+        // Quality Rule
+        base.QualityCanNotBeHigherThanFifty(item);
     }
 }
 
@@ -125,25 +173,6 @@ public class GildedRose
             int MinSellInValue = 0;
             int MinQualityValue = 0;
             int MaxQualityValue = 50;
-
-
-
-
-            // Category: Conjured Items
-            if (itemName == ItemCategory.Conjured)
-            {
-                //SellIn Rules
-                Items[i].SellIn = itemSellIn - 1;
-
-                // Quality Rules
-                // Conjured Items Degrade twice as fast as Normal Items
-                if (itemQuality <= MinQualityValue) Items[i].Quality = MinQualityValue;
-                else Items[i].Quality = itemQuality - 2;
-
-                if (Items[i].Quality >= MaxQualityValue) Items[i].Quality = MaxQualityValue;
-                
-                continue;
-            }
 
             // Category: Aged Brie
 
@@ -201,7 +230,11 @@ public class GildedRose
 
             foreach (IItemUpdateRule itemRule in Rules)
             {
-                if (itemRule.AppliesTo(Items[i].Name)) itemRule.Update(Items[i]);
+                if (itemRule.AppliesTo(Items[i].Name))
+                {
+                    itemRule.Update(Items[i]);
+                    break;
+                }
             }
 
         }

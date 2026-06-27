@@ -42,6 +42,7 @@ public class Program
 
         IList<IItemUpdateRule> updateRules = new List<IItemUpdateRule>
         {
+            new ConjuredUpdateRule(),
             new NormalUpdateRule()
         };
 
